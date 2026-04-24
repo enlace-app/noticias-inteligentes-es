@@ -141,8 +141,17 @@ export function NewsFeed() {
     }
   };
 
-  const featured = filtered[0];
-  const rest = filtered.slice(1);
+  const breakingItems = useMemo(
+    () => filtered.filter((n) => isBreaking(n)).slice(0, 4),
+    [filtered],
+  );
+  const breakingIds = useMemo(() => new Set(breakingItems.map((n) => n.id)), [breakingItems]);
+  const nonBreaking = useMemo(
+    () => filtered.filter((n) => !breakingIds.has(n.id)),
+    [filtered, breakingIds],
+  );
+  const featured = nonBreaking[0];
+  const rest = nonBreaking.slice(1);
 
   return (
     <div className="min-h-screen bg-background">
