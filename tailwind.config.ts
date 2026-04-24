@@ -57,6 +57,22 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        breaking: {
+          DEFAULT: "hsl(var(--breaking))",
+          foreground: "hsl(var(--breaking-foreground))",
+        },
+        "party-pp": {
+          DEFAULT: "hsl(var(--party-pp))",
+          foreground: "hsl(var(--party-pp-foreground))",
+        },
+        "party-psoe": {
+          DEFAULT: "hsl(var(--party-psoe))",
+          foreground: "hsl(var(--party-psoe-foreground))",
+        },
+        "party-vox": {
+          DEFAULT: "hsl(var(--party-vox))",
+          foreground: "hsl(var(--party-vox-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

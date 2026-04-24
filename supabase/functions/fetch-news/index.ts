@@ -6,12 +6,17 @@ const corsHeaders = {
 
 const SOURCES = [
   { name: "El País", url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/portada", category: "Generalista" },
+  { name: "El País Política", url: "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/espana/portada", category: "Política" },
   { name: "El Mundo", url: "https://e00-elmundo.uecdn.es/elmundo/rss/portada.xml", category: "Generalista" },
+  { name: "El Mundo España", url: "https://e00-elmundo.uecdn.es/elmundo/rss/espana.xml", category: "Política" },
   { name: "RTVE", url: "https://api.rtve.es/api/noticias.rss", category: "Generalista" },
   { name: "ABC", url: "https://www.abc.es/rss/feeds/abcPortada.xml", category: "Generalista" },
+  { name: "ABC España", url: "https://www.abc.es/rss/feeds/abc_Espana.xml", category: "Política" },
   { name: "20 Minutos", url: "https://www.20minutos.es/rss/", category: "Generalista" },
   { name: "La Vanguardia", url: "https://www.lavanguardia.com/rss/home.xml", category: "Generalista" },
   { name: "El Confidencial", url: "https://rss.elconfidencial.com/espana/", category: "Política" },
+  { name: "elDiario.es Política", url: "https://www.eldiario.es/rss/category/politica/", category: "Política" },
+  { name: "Público Política", url: "https://www.publico.es/rss/politica/", category: "Política" },
   { name: "Marca", url: "https://e00-marca.uecdn.es/rss/portada.xml", category: "Deportes" },
 ];
 

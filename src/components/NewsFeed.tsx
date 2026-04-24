@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllNews, SOURCES, type NewsItem } from "@/lib/news";
+import {
+  detectParty,
+  fetchAllNews,
+  isBreaking,
+  SOURCES,
+  type NewsItem,
+  type Party,
+} from "@/lib/news";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,11 +19,38 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { RefreshCw, ExternalLink, Search, Radio, Sparkles, Loader2 } from "lucide-react";
+import {
+  RefreshCw,
+  ExternalLink,
+  Search,
+  Radio,
+  Sparkles,
+  Loader2,
+  Zap,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const REFRESH_MS = 60_000;
+
+const PARTY_LABEL: Record<Exclude<Party, null>, string> = {
+  PP: "PP",
+  PSOE: "PSOE",
+  VOX: "VOX",
+};
+
+function partyCardClasses(party: Party): string {
+  switch (party) {
+    case "PP":
+      return "bg-party-pp text-party-pp-foreground border-party-pp";
+    case "PSOE":
+      return "bg-party-psoe text-party-psoe-foreground border-party-psoe";
+    case "VOX":
+      return "bg-party-vox text-party-vox-foreground border-party-vox";
+    default:
+      return "";
+  }
+}
 
 function timeAgo(date: string): string {
   const d = new Date(date).getTime();
@@ -107,8 +141,17 @@ export function NewsFeed() {
     }
   };
 
-  const featured = filtered[0];
-  const rest = filtered.slice(1);
+  const breakingItems = useMemo(
+    () => filtered.filter((n) => isBreaking(n)).slice(0, 4),
+    [filtered],
+  );
+  const breakingIds = useMemo(() => new Set(breakingItems.map((n) => n.id)), [breakingItems]);
+  const nonBreaking = useMemo(
+    () => filtered.filter((n) => !breakingIds.has(n.id)),
+    [filtered, breakingIds],
+  );
+  const featured = nonBreaking[0];
+  const rest = nonBreaking.slice(1);
 
   return (
     <div className="min-h-screen bg-background">
@@ -201,8 +244,63 @@ export function NewsFeed() {
           </div>
         ) : (
           <>
-            {featured && (
-              <Card className="overflow-hidden hover:shadow-lg transition-all border-border/60 mb-8 group">
+            {breakingItems.length > 0 && (
+              <section className="mb-8">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-breaking text-breaking-foreground px-3 py-1 text-sm font-extrabold tracking-wider uppercase animate-pulse">
+                    <Zap className="h-3.5 w-3.5" />
+                    ¡Última hora!
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Actualizado en directo
+                  </span>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {breakingItems.map((n) => {
+                    const party = n.category === "Política" ? detectParty(n) : null;
+                    const partyCls = partyCardClasses(party);
+                    return (
+                      <a
+                        key={n.id}
+                        href={n.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        <Card
+                          className={`p-4 border-2 border-breaking ${
+                            partyCls || "bg-breaking/5"
+                          } hover:shadow-lg transition-all`}
+                        >
+                          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <Badge className="bg-breaking text-breaking-foreground hover:bg-breaking/90 text-[10px] uppercase tracking-wider">
+                              ¡Última hora!
+                            </Badge>
+                            {party && (
+                              <Badge variant="outline" className={`text-[10px] ${partyCls ? "border-current text-current" : ""}`}>
+                                {PARTY_LABEL[party]}
+                              </Badge>
+                            )}
+                            <span className={`text-xs ml-auto ${partyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                              {n.source} · {timeAgo(n.pubDate)}
+                            </span>
+                          </div>
+                          <h3 className={`font-bold leading-snug ${partyCls ? "" : "text-foreground"}`}>
+                            {n.title}
+                          </h3>
+                        </Card>
+                      </a>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {featured && (() => {
+              const fParty = featured.category === "Política" ? detectParty(featured) : null;
+              const fPartyCls = partyCardClasses(fParty);
+              return (
+              <Card className={`overflow-hidden hover:shadow-lg transition-all mb-8 group ${fPartyCls || "border-border/60"}`}>
                 <div className="grid md:grid-cols-2 gap-0">
                   {featured.image && (
                     <a
@@ -221,25 +319,36 @@ export function NewsFeed() {
                     </a>
                   )}
                   <div className="p-6 md:p-8 flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge>{featured.source}</Badge>
-                      <Badge variant="secondary">{featured.category}</Badge>
-                      <span className="text-xs text-muted-foreground ml-auto">
+                    <div className="flex items-center gap-2 mb-3 flex-wrap">
+                      <Badge className={fPartyCls ? "bg-background/20 text-current hover:bg-background/30 border-current/30" : ""}>
+                        {featured.source}
+                      </Badge>
+                      <Badge variant="secondary" className={fPartyCls ? "bg-background/20 text-current hover:bg-background/30" : ""}>
+                        {featured.category}
+                      </Badge>
+                      {fParty && (
+                        <Badge variant="outline" className="border-current text-current">
+                          {PARTY_LABEL[fParty]}
+                        </Badge>
+                      )}
+                      <span className={`text-xs ml-auto ${fPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
                         {timeAgo(featured.pubDate)}
                       </span>
                     </div>
                     <a href={featured.link} target="_blank" rel="noopener noreferrer">
-                      <h2 className="text-2xl md:text-3xl font-bold leading-tight mb-3 hover:text-primary transition-colors">
+                      <h2 className={`text-2xl md:text-3xl font-bold leading-tight mb-3 transition-colors ${fPartyCls ? "hover:opacity-90" : "hover:text-primary"}`}>
                         {featured.title}
                       </h2>
                     </a>
-                    <p className="text-muted-foreground line-clamp-3">{featured.description}</p>
+                    <p className={fPartyCls ? "opacity-90 line-clamp-3" : "text-muted-foreground line-clamp-3"}>
+                      {featured.description}
+                    </p>
                     <div className="mt-4 flex items-center gap-2 flex-wrap">
-                      <Button size="sm" onClick={(e) => handleSummarize(e, featured)}>
+                      <Button size="sm" variant={fPartyCls ? "secondary" : "default"} onClick={(e) => handleSummarize(e, featured)}>
                         <Sparkles className="h-4 w-4" />
                         Resumir con IA
                       </Button>
-                      <Button asChild size="sm" variant="outline">
+                      <Button asChild size="sm" variant="outline" className={fPartyCls ? "bg-transparent border-current text-current hover:bg-background/20 hover:text-current" : ""}>
                         <a href={featured.link} target="_blank" rel="noopener noreferrer">
                           Leer noticia
                           <ExternalLink className="h-3.5 w-3.5" />
@@ -249,13 +358,20 @@ export function NewsFeed() {
                   </div>
                 </div>
               </Card>
-            )}
+              );
+            })()}
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {rest.map((n) => (
+              {rest.map((n) => {
+                const party = n.category === "Política" ? detectParty(n) : null;
+                const partyCls = partyCardClasses(party);
+                const colored = !!partyCls;
+                return (
                 <Card
                   key={n.id}
-                  className="h-full overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all border-border/60 flex flex-col group"
+                  className={`h-full overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all flex flex-col group ${
+                    colored ? partyCls + " border-2" : "border-border/60"
+                  }`}
                 >
                   {n.image && (
                     <a
@@ -275,17 +391,29 @@ export function NewsFeed() {
                   )}
                   <div className="p-5 flex flex-col flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${colored ? "border-current text-current bg-background/10" : ""}`}
+                      >
                         {n.source}
                       </Badge>
-                      <span className="text-xs text-muted-foreground">{timeAgo(n.pubDate)}</span>
+                      {party && (
+                        <Badge className="bg-background/20 text-current hover:bg-background/30 text-[10px] border border-current/30">
+                          {PARTY_LABEL[party]}
+                        </Badge>
+                      )}
+                      <span className={`text-xs ${colored ? "opacity-90" : "text-muted-foreground"}`}>
+                        {timeAgo(n.pubDate)}
+                      </span>
                     </div>
                     <a href={n.link} target="_blank" rel="noopener noreferrer">
-                      <h3 className="font-semibold leading-snug mb-2 line-clamp-3 hover:text-primary transition-colors">
+                      <h3 className={`font-semibold leading-snug mb-2 line-clamp-3 transition-colors ${
+                        colored ? "hover:opacity-90" : "hover:text-primary"
+                      }`}>
                         {n.title}
                       </h3>
                     </a>
-                    <p className="text-sm text-muted-foreground line-clamp-3 flex-1">
+                    <p className={`text-sm line-clamp-3 flex-1 ${colored ? "opacity-90" : "text-muted-foreground"}`}>
                       {n.description}
                     </p>
                     <div className="mt-4 flex items-center gap-2">
@@ -298,7 +426,13 @@ export function NewsFeed() {
                         <Sparkles className="h-3.5 w-3.5" />
                         Resumir con IA
                       </Button>
-                      <Button asChild size="sm" variant="ghost" aria-label="Abrir noticia">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Abrir noticia"
+                        className={colored ? "text-current hover:bg-background/20 hover:text-current" : ""}
+                      >
                         <a href={n.link} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
@@ -306,7 +440,8 @@ export function NewsFeed() {
                     </div>
                   </div>
                 </Card>
-              ))}
+                );
+              })}
             </div>
 
             <p className="text-center text-xs text-muted-foreground mt-10">
