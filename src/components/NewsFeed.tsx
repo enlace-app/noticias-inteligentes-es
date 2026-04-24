@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAllNews, SOURCES, type NewsItem } from "@/lib/news";
+import {
+  detectParty,
+  fetchAllNews,
+  isBreaking,
+  SOURCES,
+  type NewsItem,
+  type Party,
+} from "@/lib/news";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,9 +19,38 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { RefreshCw, ExternalLink, Search, Radio, Sparkles, Loader2 } from "lucide-react";
+import {
+  RefreshCw,
+  ExternalLink,
+  Search,
+  Radio,
+  Sparkles,
+  Loader2,
+  Zap,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+const REFRESH_MS = 60_000;
+
+const PARTY_LABEL: Record<Exclude<Party, null>, string> = {
+  PP: "PP",
+  PSOE: "PSOE",
+  VOX: "VOX",
+};
+
+function partyCardClasses(party: Party): string {
+  switch (party) {
+    case "PP":
+      return "bg-party-pp text-party-pp-foreground border-party-pp";
+    case "PSOE":
+      return "bg-party-psoe text-party-psoe-foreground border-party-psoe";
+    case "VOX":
+      return "bg-party-vox text-party-vox-foreground border-party-vox";
+    default:
+      return "";
+  }
+}
 
 const REFRESH_MS = 60_000;
 
