@@ -52,8 +52,6 @@ function partyCardClasses(party: Party): string {
   }
 }
 
-const REFRESH_MS = 60_000;
-
 function timeAgo(date: string): string {
   const d = new Date(date).getTime();
   if (!d) return "";
