@@ -634,12 +634,31 @@ export function NewsFeed() {
                       <ExternalLink className="h-4 w-4" />
                     </a>
                   </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleSaved(detailNews)}
+                    className={detailPartyCls ? "bg-transparent border-current text-current hover:bg-background/20 hover:text-current" : ""}
+                  >
+                    {savedIds.has(detailNews.id) ? (
+                      <>
+                        <BookmarkCheck className="h-4 w-4" />
+                        Guardada
+                      </>
+                    ) : (
+                      <>
+                        <Bookmark className="h-4 w-4" />
+                        Guardar
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      <BottomNav />
     </div>
   );
 }
