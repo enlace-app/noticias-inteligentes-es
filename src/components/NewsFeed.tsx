@@ -406,11 +406,10 @@ export function NewsFeed() {
                   }`}
                 >
                   {n.image && (
-                    <a
-                      href={n.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-video overflow-hidden bg-muted block"
+                    <button
+                      type="button"
+                      onClick={(e) => openDetail(e, n)}
+                      className="aspect-video overflow-hidden bg-muted block w-full"
                     >
                       <img
                         src={n.image}
@@ -419,7 +418,7 @@ export function NewsFeed() {
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => ((e.currentTarget.parentElement!.style.display = "none"))}
                       />
-                    </a>
+                    </button>
                   )}
                   <div className="p-5 flex flex-col flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -438,13 +437,13 @@ export function NewsFeed() {
                         {timeAgo(n.pubDate)}
                       </span>
                     </div>
-                    <a href={n.link} target="_blank" rel="noopener noreferrer">
+                    <button type="button" onClick={(e) => openDetail(e, n)} className="text-left">
                       <h3 className={`font-semibold leading-snug mb-2 line-clamp-3 transition-colors ${
                         colored ? "hover:opacity-90" : "hover:text-primary"
                       }`}>
                         {n.title}
                       </h3>
-                    </a>
+                    </button>
                     <p className={`text-sm line-clamp-3 flex-1 ${colored ? "opacity-90" : "text-muted-foreground"}`}>
                       {n.description}
                     </p>
