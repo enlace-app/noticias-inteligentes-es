@@ -464,15 +464,21 @@ export function NewsFeed() {
                         Resumir con IA
                       </Button>
                       <Button
-                        asChild
                         size="sm"
                         variant="ghost"
-                        aria-label="Abrir noticia"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleSaved(n);
+                        }}
+                        aria-label={savedIds.has(n.id) ? "Quitar de guardadas" : "Guardar"}
                         className={colored ? "text-current hover:bg-background/20 hover:text-current" : ""}
                       >
-                        <a href={n.link} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
+                        {savedIds.has(n.id) ? (
+                          <BookmarkCheck className="h-3.5 w-3.5" />
+                        ) : (
+                          <Bookmark className="h-3.5 w-3.5" />
+                        )}
                       </Button>
                     </div>
                   </div>
