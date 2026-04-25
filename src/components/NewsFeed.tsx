@@ -20,6 +20,13 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   RefreshCw,
   ExternalLink,
   Search,
@@ -77,6 +84,9 @@ export function NewsFeed() {
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summaryCache, setSummaryCache] = useState<Record<string, string>>({});
 
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailNews, setDetailNews] = useState<NewsItem | null>(null);
+
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery({
     queryKey: ["news"],
     queryFn: fetchAllNews,
@@ -103,9 +113,7 @@ export function NewsFeed() {
     return items;
   }, [data, category, source, query]);
 
-  const handleSummarize = async (e: React.MouseEvent, news: NewsItem) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const runSummarize = async (news: NewsItem) => {
     setActiveNews(news);
     setPanelOpen(true);
     setSummaryError(null);
@@ -140,6 +148,29 @@ export function NewsFeed() {
       setSummarizing(false);
     }
   };
+
+  const handleSummarize = (e: React.MouseEvent, news: NewsItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void runSummarize(news);
+  };
+
+  const openDetail = (e: React.MouseEvent, news: NewsItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDetailNews(news);
+    setDetailOpen(true);
+  };
+
+  const detailParty: Party = detailNews
+    ? detailNews.category === "Política"
+      ? detectParty(detailNews)
+      : null
+    : null;
+  const detailPartyCls = partyCardClasses(detailParty);
+  const detailSummary = detailNews ? summaryCache[detailNews.id] ?? "" : "";
+  const detailSummarizing =
+    summarizing && activeNews?.id === detailNews?.id && !detailSummary;
 
   const breakingItems = useMemo(
     () => filtered.filter((n) => isBreaking(n)).slice(0, 4),
@@ -260,12 +291,11 @@ export function NewsFeed() {
                     const party = n.category === "Política" ? detectParty(n) : null;
                     const partyCls = partyCardClasses(party);
                     return (
-                      <a
+                      <button
                         key={n.id}
-                        href={n.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block"
+                        type="button"
+                        onClick={(e) => openDetail(e, n)}
+                        className="block text-left w-full"
                       >
                         <Card
                           className={`p-4 border-2 border-breaking ${
@@ -289,7 +319,7 @@ export function NewsFeed() {
                             {n.title}
                           </h3>
                         </Card>
-                      </a>
+                      </button>
                     );
                   })}
                 </div>
@@ -303,11 +333,10 @@ export function NewsFeed() {
               <Card className={`overflow-hidden hover:shadow-lg transition-all mb-8 group ${fPartyCls || "border-border/60"}`}>
                 <div className="grid md:grid-cols-2 gap-0">
                   {featured.image && (
-                    <a
-                      href={featured.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-video md:aspect-auto md:h-full overflow-hidden bg-muted block"
+                    <button
+                      type="button"
+                      onClick={(e) => openDetail(e, featured)}
+                      className="aspect-video md:aspect-auto md:h-full overflow-hidden bg-muted block w-full"
                     >
                       <img
                         src={featured.image}
@@ -316,7 +345,7 @@ export function NewsFeed() {
                         loading="lazy"
                         onError={(e) => ((e.currentTarget.style.display = "none"))}
                       />
-                    </a>
+                    </button>
                   )}
                   <div className="p-6 md:p-8 flex flex-col justify-center">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -335,22 +364,25 @@ export function NewsFeed() {
                         {timeAgo(featured.pubDate)}
                       </span>
                     </div>
-                    <a href={featured.link} target="_blank" rel="noopener noreferrer">
+                    <button type="button" onClick={(e) => openDetail(e, featured)} className="text-left">
                       <h2 className={`text-2xl md:text-3xl font-bold leading-tight mb-3 transition-colors ${fPartyCls ? "hover:opacity-90" : "hover:text-primary"}`}>
                         {featured.title}
                       </h2>
-                    </a>
+                    </button>
                     <p className={fPartyCls ? "opacity-90 line-clamp-3" : "text-muted-foreground line-clamp-3"}>
                       {featured.description}
                     </p>
                     <div className="mt-4 flex items-center gap-2 flex-wrap">
-                      <Button size="sm" variant={fPartyCls ? "secondary" : "default"} onClick={(e) => handleSummarize(e, featured)}>
+                      <Button size="sm" variant={fPartyCls ? "secondary" : "default"} onClick={(e) => openDetail(e, featured)}>
+                        Ver detalle
+                      </Button>
+                      <Button size="sm" variant={fPartyCls ? "secondary" : "outline"} onClick={(e) => handleSummarize(e, featured)}>
                         <Sparkles className="h-4 w-4" />
                         Resumir con IA
                       </Button>
-                      <Button asChild size="sm" variant="outline" className={fPartyCls ? "bg-transparent border-current text-current hover:bg-background/20 hover:text-current" : ""}>
+                      <Button asChild size="sm" variant="ghost" className={fPartyCls ? "text-current hover:bg-background/20 hover:text-current" : ""}>
                         <a href={featured.link} target="_blank" rel="noopener noreferrer">
-                          Leer noticia
+                          Fuente
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       </Button>
@@ -374,11 +406,10 @@ export function NewsFeed() {
                   }`}
                 >
                   {n.image && (
-                    <a
-                      href={n.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-video overflow-hidden bg-muted block"
+                    <button
+                      type="button"
+                      onClick={(e) => openDetail(e, n)}
+                      className="aspect-video overflow-hidden bg-muted block w-full"
                     >
                       <img
                         src={n.image}
@@ -387,7 +418,7 @@ export function NewsFeed() {
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => ((e.currentTarget.parentElement!.style.display = "none"))}
                       />
-                    </a>
+                    </button>
                   )}
                   <div className="p-5 flex flex-col flex-1">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -406,13 +437,13 @@ export function NewsFeed() {
                         {timeAgo(n.pubDate)}
                       </span>
                     </div>
-                    <a href={n.link} target="_blank" rel="noopener noreferrer">
+                    <button type="button" onClick={(e) => openDetail(e, n)} className="text-left">
                       <h3 className={`font-semibold leading-snug mb-2 line-clamp-3 transition-colors ${
                         colored ? "hover:opacity-90" : "hover:text-primary"
                       }`}>
                         {n.title}
                       </h3>
-                    </a>
+                    </button>
                     <p className={`text-sm line-clamp-3 flex-1 ${colored ? "opacity-90" : "text-muted-foreground"}`}>
                       {n.description}
                     </p>
@@ -501,6 +532,102 @@ export function NewsFeed() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          {detailNews && (
+            <>
+              {detailNews.image && (
+                <div className="aspect-video w-full overflow-hidden bg-muted">
+                  <img
+                    src={detailNews.image}
+                    alt={detailNews.title}
+                    className="h-full w-full object-cover"
+                    onError={(e) => ((e.currentTarget.parentElement!.style.display = "none"))}
+                  />
+                </div>
+              )}
+              <div className={`p-6 ${detailPartyCls}`}>
+                <DialogHeader className="text-left space-y-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {isBreaking(detailNews) && (
+                      <Badge className="bg-breaking text-breaking-foreground hover:bg-breaking/90 text-[10px] uppercase tracking-wider animate-pulse">
+                        <Zap className="h-3 w-3" />
+                        ¡Última hora!
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className={detailPartyCls ? "border-current text-current bg-background/10" : ""}>
+                      {detailNews.source}
+                    </Badge>
+                    <Badge variant="secondary" className={detailPartyCls ? "bg-background/20 text-current hover:bg-background/30" : ""}>
+                      {detailNews.category}
+                    </Badge>
+                    {detailParty && (
+                      <Badge variant="outline" className="border-current text-current">
+                        {PARTY_LABEL[detailParty]}
+                      </Badge>
+                    )}
+                    <span className={`text-xs ml-auto ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                      {timeAgo(detailNews.pubDate)}
+                    </span>
+                  </div>
+                  <DialogTitle className="text-2xl md:text-3xl font-bold leading-tight">
+                    {detailNews.title}
+                  </DialogTitle>
+                  <DialogDescription className={`text-base leading-relaxed ${detailPartyCls ? "text-current opacity-95" : "text-foreground/80"}`}>
+                    {detailNews.description}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className={`mt-6 rounded-lg border p-4 ${detailPartyCls ? "bg-background/10 border-current/30" : "bg-muted/40"}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`flex h-7 w-7 items-center justify-center rounded-md ${detailPartyCls ? "bg-background/20 text-current" : "bg-primary/10 text-primary"}`}>
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <h4 className="font-semibold text-sm">Resumen con IA</h4>
+                  </div>
+
+                  {detailSummarizing ? (
+                    <div className={`flex items-center gap-2 text-sm ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generando resumen...
+                    </div>
+                  ) : detailSummary ? (
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{detailSummary}</p>
+                  ) : summaryError && activeNews?.id === detailNews.id ? (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                      {summaryError}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className={`text-sm ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                        Genera un resumen breve en español con IA.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant={detailPartyCls ? "secondary" : "default"}
+                        onClick={() => void runSummarize(detailNews)}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Generar resumen
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex items-center gap-2 flex-wrap">
+                  <Button asChild variant={detailPartyCls ? "secondary" : "default"}>
+                    <a href={detailNews.link} target="_blank" rel="noopener noreferrer">
+                      Leer noticia completa
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
