@@ -270,7 +270,7 @@ export function NewsFeed() {
 
       <main className="container mx-auto px-4 py-4 max-w-3xl">
         {isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="h-72 animate-pulse bg-muted/40" />
             ))}
@@ -292,7 +292,7 @@ export function NewsFeed() {
                     Actualizado en directo
                   </span>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {breakingItems.map((n) => {
                     const party = n.category === "Política" ? detectParty(n) : null;
                     const partyCls = partyCardClasses(party);
@@ -399,7 +399,7 @@ export function NewsFeed() {
               );
             })()}
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {rest.map((n) => {
                 const party = n.category === "Política" ? detectParty(n) : null;
                 const partyCls = partyCardClasses(party);
