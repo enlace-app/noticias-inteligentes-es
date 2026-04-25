@@ -373,13 +373,16 @@ export function NewsFeed() {
                       {featured.description}
                     </p>
                     <div className="mt-4 flex items-center gap-2 flex-wrap">
-                      <Button size="sm" variant={fPartyCls ? "secondary" : "default"} onClick={(e) => handleSummarize(e, featured)}>
+                      <Button size="sm" variant={fPartyCls ? "secondary" : "default"} onClick={(e) => openDetail(e, featured)}>
+                        Ver detalle
+                      </Button>
+                      <Button size="sm" variant={fPartyCls ? "secondary" : "outline"} onClick={(e) => handleSummarize(e, featured)}>
                         <Sparkles className="h-4 w-4" />
                         Resumir con IA
                       </Button>
-                      <Button asChild size="sm" variant="outline" className={fPartyCls ? "bg-transparent border-current text-current hover:bg-background/20 hover:text-current" : ""}>
+                      <Button asChild size="sm" variant="ghost" className={fPartyCls ? "text-current hover:bg-background/20 hover:text-current" : ""}>
                         <a href={featured.link} target="_blank" rel="noopener noreferrer">
-                          Leer noticia
+                          Fuente
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       </Button>
