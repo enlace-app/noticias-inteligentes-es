@@ -34,9 +34,13 @@ import {
   Sparkles,
   Loader2,
   Zap,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useSavedNews } from "@/hooks/useSavedNews";
+import { BottomNav } from "@/components/BottomNav";
 
 const REFRESH_MS = 60_000;
 
