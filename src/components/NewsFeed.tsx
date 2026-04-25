@@ -291,12 +291,11 @@ export function NewsFeed() {
                     const party = n.category === "Política" ? detectParty(n) : null;
                     const partyCls = partyCardClasses(party);
                     return (
-                      <a
+                      <button
                         key={n.id}
-                        href={n.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block"
+                        type="button"
+                        onClick={(e) => openDetail(e, n)}
+                        className="block text-left w-full"
                       >
                         <Card
                           className={`p-4 border-2 border-breaking ${
@@ -320,7 +319,7 @@ export function NewsFeed() {
                             {n.title}
                           </h3>
                         </Card>
-                      </a>
+                      </button>
                     );
                   })}
                 </div>
