@@ -113,9 +113,7 @@ export function NewsFeed() {
     return items;
   }, [data, category, source, query]);
 
-  const handleSummarize = async (e: React.MouseEvent, news: NewsItem) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const runSummarize = async (news: NewsItem) => {
     setActiveNews(news);
     setPanelOpen(true);
     setSummaryError(null);
@@ -150,6 +148,29 @@ export function NewsFeed() {
       setSummarizing(false);
     }
   };
+
+  const handleSummarize = (e: React.MouseEvent, news: NewsItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    void runSummarize(news);
+  };
+
+  const openDetail = (e: React.MouseEvent, news: NewsItem) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDetailNews(news);
+    setDetailOpen(true);
+  };
+
+  const detailParty: Party = detailNews
+    ? detailNews.category === "Política"
+      ? detectParty(detailNews)
+      : null
+    : null;
+  const detailPartyCls = partyCardClasses(detailParty);
+  const detailSummary = detailNews ? summaryCache[detailNews.id] ?? "" : "";
+  const detailSummarizing =
+    summarizing && activeNews?.id === detailNews?.id && !detailSummary;
 
   const breakingItems = useMemo(
     () => filtered.filter((n) => isBreaking(n)).slice(0, 4),
