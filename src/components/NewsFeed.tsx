@@ -76,6 +76,8 @@ function timeAgo(date: string): string {
 const CATEGORIES = ["Todas", ...Array.from(new Set(SOURCES.map((s) => s.category)))];
 
 export function NewsFeed() {
+  const { savedIds, toggle: toggleSaved } = useSavedNews();
+
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Todas");
   const [source, setSource] = useState("Todas");
