@@ -532,6 +532,102 @@ export function NewsFeed() {
           </div>
         </SheetContent>
       </Sheet>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
+          {detailNews && (
+            <>
+              {detailNews.image && (
+                <div className="aspect-video w-full overflow-hidden bg-muted">
+                  <img
+                    src={detailNews.image}
+                    alt={detailNews.title}
+                    className="h-full w-full object-cover"
+                    onError={(e) => ((e.currentTarget.parentElement!.style.display = "none"))}
+                  />
+                </div>
+              )}
+              <div className={`p-6 ${detailPartyCls}`}>
+                <DialogHeader className="text-left space-y-3">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {isBreaking(detailNews) && (
+                      <Badge className="bg-breaking text-breaking-foreground hover:bg-breaking/90 text-[10px] uppercase tracking-wider animate-pulse">
+                        <Zap className="h-3 w-3" />
+                        ¡Última hora!
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className={detailPartyCls ? "border-current text-current bg-background/10" : ""}>
+                      {detailNews.source}
+                    </Badge>
+                    <Badge variant="secondary" className={detailPartyCls ? "bg-background/20 text-current hover:bg-background/30" : ""}>
+                      {detailNews.category}
+                    </Badge>
+                    {detailParty && (
+                      <Badge variant="outline" className="border-current text-current">
+                        {PARTY_LABEL[detailParty]}
+                      </Badge>
+                    )}
+                    <span className={`text-xs ml-auto ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                      {timeAgo(detailNews.pubDate)}
+                    </span>
+                  </div>
+                  <DialogTitle className="text-2xl md:text-3xl font-bold leading-tight">
+                    {detailNews.title}
+                  </DialogTitle>
+                  <DialogDescription className={`text-base leading-relaxed ${detailPartyCls ? "text-current opacity-95" : "text-foreground/80"}`}>
+                    {detailNews.description}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className={`mt-6 rounded-lg border p-4 ${detailPartyCls ? "bg-background/10 border-current/30" : "bg-muted/40"}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`flex h-7 w-7 items-center justify-center rounded-md ${detailPartyCls ? "bg-background/20 text-current" : "bg-primary/10 text-primary"}`}>
+                      <Sparkles className="h-4 w-4" />
+                    </div>
+                    <h4 className="font-semibold text-sm">Resumen con IA</h4>
+                  </div>
+
+                  {detailSummarizing ? (
+                    <div className={`flex items-center gap-2 text-sm ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generando resumen...
+                    </div>
+                  ) : detailSummary ? (
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{detailSummary}</p>
+                  ) : summaryError && activeNews?.id === detailNews.id ? (
+                    <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                      {summaryError}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className={`text-sm ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
+                        Genera un resumen breve en español con IA.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant={detailPartyCls ? "secondary" : "default"}
+                        onClick={() => void runSummarize(detailNews)}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        Generar resumen
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex items-center gap-2 flex-wrap">
+                  <Button asChild variant={detailPartyCls ? "secondary" : "default"}>
+                    <a href={detailNews.link} target="_blank" rel="noopener noreferrer">
+                      Leer noticia completa
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
