@@ -191,65 +191,65 @@ export function NewsFeed() {
   const rest = nonBreaking.slice(1);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Radio className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight">España en directo</h1>
-                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                  </span>
-                  En vivo · {dataUpdatedAt ? timeAgo(new Date(dataUpdatedAt).toISOString()) : "..."}
-                </p>
-              </div>
+    <div className="min-h-screen bg-background pb-24">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md safe-top">
+        <div className="container mx-auto px-4 py-3 max-w-3xl">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shrink-0">
+              <Radio className="h-5 w-5" />
             </div>
-            <div className="flex items-center gap-2 flex-1 max-w-md min-w-[200px]">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar noticias..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => refetch()}
-                disabled={isFetching}
-                aria-label="Actualizar"
-              >
-                <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-              </Button>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base font-bold tracking-tight truncate">España en directo</h1>
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+                </span>
+                En vivo · {dataUpdatedAt ? timeAgo(new Date(dataUpdatedAt).toISOString()) : "..."}
+              </p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => refetch()}
+              disabled={isFetching}
+              aria-label="Actualizar"
+              className="h-9 w-9 shrink-0"
+            >
+              <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            </Button>
           </div>
 
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+          <div className="relative mt-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar noticias..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
+
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {CATEGORIES.map((c) => (
               <Button
                 key={c}
                 size="sm"
                 variant={category === c ? "default" : "secondary"}
                 onClick={() => setCategory(c)}
-                className="shrink-0"
+                className="shrink-0 h-7 text-xs rounded-full"
               >
                 {c}
               </Button>
             ))}
-            <span className="w-px bg-border mx-1 shrink-0" />
+          </div>
+
+          <div className="mt-2 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             <Button
               size="sm"
               variant={source === "Todas" ? "default" : "ghost"}
               onClick={() => setSource("Todas")}
-              className="shrink-0"
+              className="shrink-0 h-7 text-xs rounded-full"
             >
               Todas las fuentes
             </Button>
@@ -259,7 +259,7 @@ export function NewsFeed() {
                 size="sm"
                 variant={source === s.name ? "default" : "ghost"}
                 onClick={() => setSource(s.name)}
-                className="shrink-0"
+                className="shrink-0 h-7 text-xs rounded-full"
               >
                 {s.name}
               </Button>
@@ -268,7 +268,7 @@ export function NewsFeed() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-4 max-w-3xl">
         {isLoading ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
