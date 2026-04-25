@@ -84,6 +84,9 @@ export function NewsFeed() {
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summaryCache, setSummaryCache] = useState<Record<string, string>>({});
 
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailNews, setDetailNews] = useState<NewsItem | null>(null);
+
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery({
     queryKey: ["news"],
     queryFn: fetchAllNews,
