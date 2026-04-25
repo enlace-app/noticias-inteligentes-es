@@ -364,11 +364,11 @@ export function NewsFeed() {
                         {timeAgo(featured.pubDate)}
                       </span>
                     </div>
-                    <a href={featured.link} target="_blank" rel="noopener noreferrer">
+                    <button type="button" onClick={(e) => openDetail(e, featured)} className="text-left">
                       <h2 className={`text-2xl md:text-3xl font-bold leading-tight mb-3 transition-colors ${fPartyCls ? "hover:opacity-90" : "hover:text-primary"}`}>
                         {featured.title}
                       </h2>
-                    </a>
+                    </button>
                     <p className={fPartyCls ? "opacity-90 line-clamp-3" : "text-muted-foreground line-clamp-3"}>
                       {featured.description}
                     </p>
