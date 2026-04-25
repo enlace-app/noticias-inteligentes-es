@@ -333,11 +333,10 @@ export function NewsFeed() {
               <Card className={`overflow-hidden hover:shadow-lg transition-all mb-8 group ${fPartyCls || "border-border/60"}`}>
                 <div className="grid md:grid-cols-2 gap-0">
                   {featured.image && (
-                    <a
-                      href={featured.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="aspect-video md:aspect-auto md:h-full overflow-hidden bg-muted block"
+                    <button
+                      type="button"
+                      onClick={(e) => openDetail(e, featured)}
+                      className="aspect-video md:aspect-auto md:h-full overflow-hidden bg-muted block w-full"
                     >
                       <img
                         src={featured.image}
@@ -346,7 +345,7 @@ export function NewsFeed() {
                         loading="lazy"
                         onError={(e) => ((e.currentTarget.style.display = "none"))}
                       />
-                    </a>
+                    </button>
                   )}
                   <div className="p-6 md:p-8 flex flex-col justify-center">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
