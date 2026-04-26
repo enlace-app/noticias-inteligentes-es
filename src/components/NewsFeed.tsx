@@ -543,10 +543,8 @@ export function NewsFeed() {
               <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 {summaryError}
               </div>
-            ) : summary ? (
-              <div className="rounded-lg border bg-muted/40 p-4 text-sm leading-relaxed whitespace-pre-wrap">
-                {summary}
-              </div>
+            ) : activeNews && blocksCache[activeNews.id] ? (
+              <SummaryBlocksView blocks={blocksCache[activeNews.id]} />
             ) : null}
 
             {activeNews && (
