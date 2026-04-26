@@ -135,12 +135,8 @@ export function NewsFeed() {
     setPanelOpen(true);
     setSummaryError(null);
 
-    if (summaryCache[news.id]) {
-      setSummary(summaryCache[news.id]);
-      return;
-    }
+    if (blocksCache[news.id]) return;
 
-    setSummary("");
     setSummarizing(true);
     try {
       const { data: result, error } = await supabase.functions.invoke("summarize-news", {
@@ -154,9 +150,22 @@ export function NewsFeed() {
       if (error) throw error;
       if (result?.error) throw new Error(result.error);
 
-      const text = (result?.summary as string) ?? "";
-      setSummary(text);
-      setSummaryCache((prev) => ({ ...prev, [news.id]: text }));
+      const blocks = result?.blocks as SummaryBlocks | undefined;
+      if (blocks && blocks.what_happened) {
+        setBlocksCache((prev) => ({ ...prev, [news.id]: blocks }));
+      } else {
+        // Fallback: convertir texto plano en bloques
+        const text = (result?.summary as string) ?? "";
+        setBlocksCache((prev) => ({
+          ...prev,
+          [news.id]: {
+            what_happened: text,
+            why_it_matters: "",
+            what_could_happen: "",
+            read_seconds: 60,
+          },
+        }));
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "No se pudo generar el resumen";
       setSummaryError(msg);
