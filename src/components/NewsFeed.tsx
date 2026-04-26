@@ -159,12 +159,6 @@ export function NewsFeed() {
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
 
-  type SummaryBlocks = {
-    what_happened: string;
-    why_it_matters: string;
-    what_could_happen: string;
-    read_seconds: number;
-  };
   const [blocksCache, setBlocksCache] = useState<Record<string, SummaryBlocks>>({});
 
   const [detailOpen, setDetailOpen] = useState(false);
