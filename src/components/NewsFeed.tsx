@@ -89,13 +89,20 @@ export function NewsFeed() {
 
   const [panelOpen, setPanelOpen] = useState(false);
   const [activeNews, setActiveNews] = useState<NewsItem | null>(null);
-  const [summary, setSummary] = useState<string>("");
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [summaryCache, setSummaryCache] = useState<Record<string, string>>({});
+
+  type SummaryBlocks = {
+    what_happened: string;
+    why_it_matters: string;
+    what_could_happen: string;
+    read_seconds: number;
+  };
+  const [blocksCache, setBlocksCache] = useState<Record<string, SummaryBlocks>>({});
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailNews, setDetailNews] = useState<NewsItem | null>(null);
+  const [quickMode, setQuickMode] = useState(false);
 
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery({
     queryKey: ["news"],
