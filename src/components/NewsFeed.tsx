@@ -36,6 +36,10 @@ import {
   Zap,
   Bookmark,
   BookmarkCheck,
+  Clock,
+  Lightbulb,
+  Newspaper,
+  TrendingUp,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -75,6 +79,73 @@ function timeAgo(date: string): string {
 
 const CATEGORIES = ["Todas", ...Array.from(new Set(SOURCES.map((s) => s.category)))];
 
+type SummaryBlocks = {
+  what_happened: string;
+  why_it_matters: string;
+  what_could_happen: string;
+  read_seconds: number;
+};
+
+function SummaryBlocksView({
+  blocks,
+  compact = false,
+  accent = false,
+}: {
+  blocks: SummaryBlocks;
+  compact?: boolean;
+  accent?: boolean;
+}) {
+  const items = [
+    {
+      key: "what_happened",
+      label: "Qué pasó",
+      icon: Newspaper,
+      text: blocks.what_happened,
+    },
+    {
+      key: "why_it_matters",
+      label: "Por qué importa",
+      icon: Lightbulb,
+      text: blocks.why_it_matters,
+    },
+    {
+      key: "what_could_happen",
+      label: "Qué puede pasar",
+      icon: TrendingUp,
+      text: blocks.what_could_happen,
+    },
+  ];
+
+  if (compact) {
+    // Modo "2 minutos": solo qué pasó + viñetas cortas
+    return (
+      <div className="space-y-2 text-sm leading-relaxed">
+        <p className="font-medium">{blocks.what_happened}</p>
+        <ul className={`list-disc pl-5 space-y-1 ${accent ? "opacity-90" : "text-muted-foreground"}`}>
+          {blocks.why_it_matters && <li>{blocks.why_it_matters}</li>}
+          {blocks.what_could_happen && <li>{blocks.what_could_happen}</li>}
+        </ul>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map(({ key, label, icon: Icon, text }) =>
+        text ? (
+          <div key={key} className="space-y-1">
+            <div className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${accent ? "opacity-80" : "text-muted-foreground"}`}>
+              <Icon className="h-3 w-3" />
+              {label}
+            </div>
+            <p className="text-sm leading-relaxed">{text}</p>
+          </div>
+        ) : null,
+      )}
+    </div>
+  );
+}
+
 export function NewsFeed() {
   const { savedIds, toggle: toggleSaved } = useSavedNews();
 
@@ -85,13 +156,14 @@ export function NewsFeed() {
 
   const [panelOpen, setPanelOpen] = useState(false);
   const [activeNews, setActiveNews] = useState<NewsItem | null>(null);
-  const [summary, setSummary] = useState<string>("");
   const [summarizing, setSummarizing] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
-  const [summaryCache, setSummaryCache] = useState<Record<string, string>>({});
+
+  const [blocksCache, setBlocksCache] = useState<Record<string, SummaryBlocks>>({});
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailNews, setDetailNews] = useState<NewsItem | null>(null);
+  const [quickMode, setQuickMode] = useState(false);
 
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery({
     queryKey: ["news"],
@@ -124,12 +196,8 @@ export function NewsFeed() {
     setPanelOpen(true);
     setSummaryError(null);
 
-    if (summaryCache[news.id]) {
-      setSummary(summaryCache[news.id]);
-      return;
-    }
+    if (blocksCache[news.id]) return;
 
-    setSummary("");
     setSummarizing(true);
     try {
       const { data: result, error } = await supabase.functions.invoke("summarize-news", {
@@ -143,9 +211,22 @@ export function NewsFeed() {
       if (error) throw error;
       if (result?.error) throw new Error(result.error);
 
-      const text = (result?.summary as string) ?? "";
-      setSummary(text);
-      setSummaryCache((prev) => ({ ...prev, [news.id]: text }));
+      const blocks = result?.blocks as SummaryBlocks | undefined;
+      if (blocks && blocks.what_happened) {
+        setBlocksCache((prev) => ({ ...prev, [news.id]: blocks }));
+      } else {
+        // Fallback: convertir texto plano en bloques
+        const text = (result?.summary as string) ?? "";
+        setBlocksCache((prev) => ({
+          ...prev,
+          [news.id]: {
+            what_happened: text,
+            why_it_matters: "",
+            what_could_happen: "",
+            read_seconds: 60,
+          },
+        }));
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "No se pudo generar el resumen";
       setSummaryError(msg);
@@ -174,9 +255,9 @@ export function NewsFeed() {
       : null
     : null;
   const detailPartyCls = partyCardClasses(detailParty);
-  const detailSummary = detailNews ? summaryCache[detailNews.id] ?? "" : "";
+  const detailBlocks = detailNews ? blocksCache[detailNews.id] : undefined;
   const detailSummarizing =
-    summarizing && activeNews?.id === detailNews?.id && !detailSummary;
+    summarizing && activeNews?.id === detailNews?.id && !detailBlocks;
 
   const breakingItems = useMemo(
     () => filtered.filter((n) => isBreaking(n)).slice(0, 4),
@@ -523,10 +604,8 @@ export function NewsFeed() {
               <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                 {summaryError}
               </div>
-            ) : summary ? (
-              <div className="rounded-lg border bg-muted/40 p-4 text-sm leading-relaxed whitespace-pre-wrap">
-                {summary}
-              </div>
+            ) : activeNews && blocksCache[activeNews.id] ? (
+              <SummaryBlocksView blocks={blocksCache[activeNews.id]} />
             ) : null}
 
             {activeNews && (
@@ -592,11 +671,33 @@ export function NewsFeed() {
                 </DialogHeader>
 
                 <div className={`mt-6 rounded-lg border p-4 ${detailPartyCls ? "bg-background/10 border-current/30" : "bg-muted/40"}`}>
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <div className={`flex h-7 w-7 items-center justify-center rounded-md ${detailPartyCls ? "bg-background/20 text-current" : "bg-primary/10 text-primary"}`}>
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <h4 className="font-semibold text-sm">Resumen con IA</h4>
+                    {detailBlocks && (
+                      <>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[11px] rounded-full px-2 py-0.5 ml-auto ${
+                            detailPartyCls ? "bg-background/20 text-current" : "bg-secondary text-secondary-foreground"
+                          }`}
+                          title="Tiempo estimado de lectura"
+                        >
+                          <Clock className="h-3 w-3" />
+                          {Math.max(1, Math.round((detailBlocks.read_seconds || 60) / 60))} min
+                        </span>
+                        <Button
+                          size="sm"
+                          variant={quickMode ? "default" : "outline"}
+                          onClick={() => setQuickMode((v) => !v)}
+                          className={`h-6 px-2 text-[11px] ${detailPartyCls && !quickMode ? "bg-transparent border-current text-current hover:bg-background/20 hover:text-current" : ""}`}
+                        >
+                          <Zap className="h-3 w-3" />
+                          {quickMode ? "Vista completa" : "Modo 2 min"}
+                        </Button>
+                      </>
+                    )}
                   </div>
 
                   {detailSummarizing ? (
@@ -604,8 +705,8 @@ export function NewsFeed() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Generando resumen...
                     </div>
-                  ) : detailSummary ? (
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{detailSummary}</p>
+                  ) : detailBlocks ? (
+                    <SummaryBlocksView blocks={detailBlocks} compact={quickMode} accent={!!detailPartyCls} />
                   ) : summaryError && activeNews?.id === detailNews.id ? (
                     <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                       {summaryError}
@@ -613,7 +714,7 @@ export function NewsFeed() {
                   ) : (
                     <div className="space-y-2">
                       <p className={`text-sm ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
-                        Genera un resumen breve en español con IA.
+                        Genera un resumen estructurado: qué pasó, por qué importa y qué puede pasar.
                       </p>
                       <Button
                         size="sm"
