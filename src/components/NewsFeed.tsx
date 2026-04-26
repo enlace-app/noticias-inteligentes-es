@@ -610,11 +610,33 @@ export function NewsFeed() {
                 </DialogHeader>
 
                 <div className={`mt-6 rounded-lg border p-4 ${detailPartyCls ? "bg-background/10 border-current/30" : "bg-muted/40"}`}>
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <div className={`flex h-7 w-7 items-center justify-center rounded-md ${detailPartyCls ? "bg-background/20 text-current" : "bg-primary/10 text-primary"}`}>
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <h4 className="font-semibold text-sm">Resumen con IA</h4>
+                    {detailBlocks && (
+                      <>
+                        <span
+                          className={`inline-flex items-center gap-1 text-[11px] rounded-full px-2 py-0.5 ml-auto ${
+                            detailPartyCls ? "bg-background/20 text-current" : "bg-secondary text-secondary-foreground"
+                          }`}
+                          title="Tiempo estimado de lectura"
+                        >
+                          <Clock className="h-3 w-3" />
+                          {Math.max(1, Math.round((detailBlocks.read_seconds || 60) / 60))} min
+                        </span>
+                        <Button
+                          size="sm"
+                          variant={quickMode ? "default" : "outline"}
+                          onClick={() => setQuickMode((v) => !v)}
+                          className={`h-6 px-2 text-[11px] ${detailPartyCls && !quickMode ? "bg-transparent border-current text-current hover:bg-background/20 hover:text-current" : ""}`}
+                        >
+                          <Zap className="h-3 w-3" />
+                          {quickMode ? "Vista completa" : "Modo 2 min"}
+                        </Button>
+                      </>
+                    )}
                   </div>
 
                   {detailSummarizing ? (
@@ -622,8 +644,8 @@ export function NewsFeed() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Generando resumen...
                     </div>
-                  ) : detailSummary ? (
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{detailSummary}</p>
+                  ) : detailBlocks ? (
+                    <SummaryBlocksView blocks={detailBlocks} compact={quickMode} accent={!!detailPartyCls} />
                   ) : summaryError && activeNews?.id === detailNews.id ? (
                     <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                       {summaryError}
@@ -631,7 +653,7 @@ export function NewsFeed() {
                   ) : (
                     <div className="space-y-2">
                       <p className={`text-sm ${detailPartyCls ? "opacity-90" : "text-muted-foreground"}`}>
-                        Genera un resumen breve en español con IA.
+                        Genera un resumen estructurado: qué pasó, por qué importa y qué puede pasar.
                       </p>
                       <Button
                         size="sm"
