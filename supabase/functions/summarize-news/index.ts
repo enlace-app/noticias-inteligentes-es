@@ -38,15 +38,61 @@ Entradilla: ${description ?? "(sin descripción)"}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "system",
             content:
-              "Eres un periodista español. Resume la noticia en 3 frases claras y neutrales, en español de España. Devuelve solo el resumen, sin titulares ni introducciones. Si la información es insuficiente, indícalo brevemente.",
+              "Eres un periodista español. Analiza la noticia y devuelve un resumen estructurado en tres bloques claros, neutrales y en español de España. Si la información es insuficiente, indícalo brevemente en cada bloque. No incluyas titulares ni introducciones, solo el contenido de cada bloque.",
           },
           { role: "user", content: userContent },
         ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "summarize_news_blocks",
+              description:
+                "Devuelve el resumen en tres bloques: qué pasó, por qué importa y qué puede pasar.",
+              parameters: {
+                type: "object",
+                properties: {
+                  what_happened: {
+                    type: "string",
+                    description:
+                      "Qué pasó: resumen de los hechos en 2-3 frases breves y concretas.",
+                  },
+                  why_it_matters: {
+                    type: "string",
+                    description:
+                      "Por qué importa: contexto e implicaciones en 2-3 frases.",
+                  },
+                  what_could_happen: {
+                    type: "string",
+                    description:
+                      "Qué puede pasar ahora: posibles consecuencias o próximos pasos en 1-2 frases.",
+                  },
+                  read_seconds: {
+                    type: "number",
+                    description:
+                      "Tiempo estimado de lectura del resumen completo en segundos (entre 30 y 120).",
+                  },
+                },
+                required: [
+                  "what_happened",
+                  "why_it_matters",
+                  "what_could_happen",
+                  "read_seconds",
+                ],
+                additionalProperties: false,
+              },
+            },
+          },
+        ],
+        tool_choice: {
+          type: "function",
+          function: { name: "summarize_news_blocks" },
+        },
       }),
     });
 
@@ -72,9 +118,44 @@ Entradilla: ${description ?? "(sin descripción)"}`;
     }
 
     const data = await response.json();
-    const summary = data?.choices?.[0]?.message?.content?.trim() ?? "";
+    const toolCall = data?.choices?.[0]?.message?.tool_calls?.[0];
+    const argsRaw = toolCall?.function?.arguments;
 
-    return new Response(JSON.stringify({ summary }), {
+    let parsed: {
+      what_happened?: string;
+      why_it_matters?: string;
+      what_could_happen?: string;
+      read_seconds?: number;
+    } = {};
+
+    if (argsRaw) {
+      try {
+        parsed = JSON.parse(argsRaw);
+      } catch (e) {
+        console.error("No se pudo parsear el tool call", e, argsRaw);
+      }
+    }
+
+    const fallbackText: string =
+      data?.choices?.[0]?.message?.content?.trim() ?? "";
+
+    const blocks = {
+      what_happened: parsed.what_happened?.trim() || "",
+      why_it_matters: parsed.why_it_matters?.trim() || "",
+      what_could_happen: parsed.what_could_happen?.trim() || "",
+      read_seconds:
+        typeof parsed.read_seconds === "number" && parsed.read_seconds > 0
+          ? Math.round(parsed.read_seconds)
+          : 60,
+    };
+
+    // Texto plano por compatibilidad
+    const summaryText =
+      [blocks.what_happened, blocks.why_it_matters, blocks.what_could_happen]
+        .filter(Boolean)
+        .join("\n\n") || fallbackText;
+
+    return new Response(JSON.stringify({ summary: summaryText, blocks }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
