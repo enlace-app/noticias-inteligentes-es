@@ -79,6 +79,73 @@ function timeAgo(date: string): string {
 
 const CATEGORIES = ["Todas", ...Array.from(new Set(SOURCES.map((s) => s.category)))];
 
+type SummaryBlocks = {
+  what_happened: string;
+  why_it_matters: string;
+  what_could_happen: string;
+  read_seconds: number;
+};
+
+function SummaryBlocksView({
+  blocks,
+  compact = false,
+  accent = false,
+}: {
+  blocks: SummaryBlocks;
+  compact?: boolean;
+  accent?: boolean;
+}) {
+  const items = [
+    {
+      key: "what_happened",
+      label: "Qué pasó",
+      icon: Newspaper,
+      text: blocks.what_happened,
+    },
+    {
+      key: "why_it_matters",
+      label: "Por qué importa",
+      icon: Lightbulb,
+      text: blocks.why_it_matters,
+    },
+    {
+      key: "what_could_happen",
+      label: "Qué puede pasar",
+      icon: TrendingUp,
+      text: blocks.what_could_happen,
+    },
+  ];
+
+  if (compact) {
+    // Modo "2 minutos": solo qué pasó + viñetas cortas
+    return (
+      <div className="space-y-2 text-sm leading-relaxed">
+        <p className="font-medium">{blocks.what_happened}</p>
+        <ul className={`list-disc pl-5 space-y-1 ${accent ? "opacity-90" : "text-muted-foreground"}`}>
+          {blocks.why_it_matters && <li>{blocks.why_it_matters}</li>}
+          {blocks.what_could_happen && <li>{blocks.what_could_happen}</li>}
+        </ul>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map(({ key, label, icon: Icon, text }) =>
+        text ? (
+          <div key={key} className="space-y-1">
+            <div className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide ${accent ? "opacity-80" : "text-muted-foreground"}`}>
+              <Icon className="h-3 w-3" />
+              {label}
+            </div>
+            <p className="text-sm leading-relaxed">{text}</p>
+          </div>
+        ) : null,
+      )}
+    </div>
+  );
+}
+
 export function NewsFeed() {
   const { savedIds, toggle: toggleSaved } = useSavedNews();
 
