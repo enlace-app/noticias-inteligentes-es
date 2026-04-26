@@ -194,9 +194,9 @@ export function NewsFeed() {
       : null
     : null;
   const detailPartyCls = partyCardClasses(detailParty);
-  const detailSummary = detailNews ? summaryCache[detailNews.id] ?? "" : "";
+  const detailBlocks = detailNews ? blocksCache[detailNews.id] : undefined;
   const detailSummarizing =
-    summarizing && activeNews?.id === detailNews?.id && !detailSummary;
+    summarizing && activeNews?.id === detailNews?.id && !detailBlocks;
 
   const breakingItems = useMemo(
     () => filtered.filter((n) => isBreaking(n)).slice(0, 4),
