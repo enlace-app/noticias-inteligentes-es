@@ -11,9 +11,19 @@ import Auth from "./pages/Auth";
 import Saved from "./pages/Saved";
 import Profile from "./pages/Profile";
 import Sanchometro from "./pages/Sanchometro";
+import Dosier from "./pages/Dosier";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+const Layout = ({ children }: { children: React.ReactNode }) => (
+  <ProtectedRoute>
+    <>
+      {children}
+      <BottomNav />
+    </>
+  </ProtectedRoute>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -24,61 +34,12 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <>
-                    <Index />
-                    <BottomNav />
-                  </>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/breaking"
-              element={
-                <ProtectedRoute>
-                  <>
-                    <Index filter="breaking" />
-                    <BottomNav />
-                  </>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/sanchometro"
-              element={
-                <ProtectedRoute>
-                  <>
-                    <Sanchometro />
-                    <BottomNav />
-                  </>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/saved"
-              element={
-                <ProtectedRoute>
-                  <>
-                    <Saved />
-                    <BottomNav />
-                  </>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <>
-                    <Profile />
-                    <BottomNav />
-                  </>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/" element={<Layout><Index /></Layout>} />
+            <Route path="/breaking" element={<Layout><Index filter="breaking" /></Layout>} />
+            <Route path="/sanchometro" element={<Layout><Sanchometro /></Layout>} />
+            <Route path="/dosier" element={<Layout><Dosier /></Layout>} />
+            <Route path="/saved" element={<Layout><Saved /></Layout>} />
+            <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
