@@ -12,6 +12,7 @@ import Saved from "./pages/Saved";
 import Profile from "./pages/Profile";
 import Sanchometro from "./pages/Sanchometro";
 import Dosier from "./pages/Dosier";
+import Troupe from "./pages/Troupe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/breaking" element={<Layout><Index filter="breaking" /></Layout>} />
             <Route path="/sanchometro" element={<Layout><Sanchometro /></Layout>} />
             <Route path="/dosier" element={<Layout><Dosier /></Layout>} />
+            <Route path="/troupe" element={<Layout><Troupe /></Layout>} />
             <Route path="/saved" element={<Layout><Saved /></Layout>} />
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="*" element={<NotFound />} />
