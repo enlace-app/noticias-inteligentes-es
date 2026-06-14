@@ -1,13 +1,13 @@
-import { Home, Zap, BarChart2, FileText, Bookmark, User } from "lucide-react";
+import { Home, Zap, BarChart2, FileText, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { path: "/",            icon: Home,     label: "Inicio" },
-  { path: "/breaking",    icon: Zap,      label: "Urgente" },
   { path: "/sanchometro", icon: BarChart2, label: "Sanchómetro" },
   { path: "/dosier",      icon: FileText,  label: "Dosier" },
-  { path: "/saved",       icon: Bookmark, label: "Guardadas" },
+  { path: "/troupe",      icon: Users,     label: "Troupe" },
+  { path: "/breaking",    icon: Zap,       label: "Urgente" },
 ];
 
 export function BottomNav() {
@@ -28,10 +28,7 @@ export function BottomNav() {
                 active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon
-                size={19}
-                strokeWidth={active ? 2.5 : 1.8}
-              />
+              <Icon size={19} strokeWidth={active ? 2.5 : 1.8} />
               <span className={cn(
                 "text-[9px] font-semibold truncate",
                 active ? "text-primary" : "text-muted-foreground"
