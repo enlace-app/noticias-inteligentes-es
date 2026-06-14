@@ -15,8 +15,13 @@ const SOURCES = [
   { name: "20 Minutos", url: "https://www.20minutos.es/rss/", category: "Generalista" },
   { name: "La Vanguardia", url: "https://www.lavanguardia.com/rss/home.xml", category: "Generalista" },
   { name: "El Confidencial", url: "https://rss.elconfidencial.com/espana/", category: "Política" },
-  { name: "elDiario.es Política", url: "https://www.eldiario.es/rss/category/politica/", category: "Política" },
-  { name: "Público Política", url: "https://www.publico.es/rss/politica/", category: "Política" },
+  { name: "elDiario.es", url: "https://www.eldiario.es/rss/", category: "Política" },
+  { name: "Público", url: "https://www.publico.es/rss/", category: "Política" },
+  { name: "OKDiario", url: "https://okdiario.com/feed", category: "Política" },
+  { name: "La Razón", url: "https://www.larazon.es/rss/", category: "Política" },
+  { name: "Libertad Digital", url: "https://www.libertaddigital.com/rss/", category: "Política" },
+  { name: "El Debate", url: "https://eldebate.com/feed/", category: "Política" },
+  { name: "Vozpópuli", url: "https://vozpopuli.com/feed/", category: "Política" },
   { name: "Marca", url: "https://e00-marca.uecdn.es/rss/portada.xml", category: "Deportes" },
 ];
 
@@ -53,16 +58,12 @@ async function fetchSource(source: { name: string; url: string; category: string
   try {
     const res = await fetch(source.url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; EspañaEnDirecto/1.0; +https://lovable.dev)",
+        "User-Agent": "Mozilla/5.0 (compatible; EspañaLibre/1.0)",
         Accept: "application/rss+xml, application/xml, text/xml, */*",
       },
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) {
-      console.log(`[${source.name}] HTTP ${res.status}`);
-      return [];
-    }
+    if (!res.ok) return [];
     const xml = await res.text();
     const items = xml.match(/<item[\s\S]*?<\/item>/g) || [];
     return items.slice(0, 15).map((item, i) => {
@@ -81,8 +82,7 @@ async function fetchSource(source: { name: string; url: string; category: string
         image: extractImage(item),
       };
     }).filter((n) => n.title && n.link);
-  } catch (err) {
-    console.log(`[${source.name}] error:`, err instanceof Error ? err.message : err);
+  } catch {
     return [];
   }
 }
@@ -91,7 +91,6 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
-
   try {
     const results = await Promise.all(SOURCES.map(fetchSource));
     const all = results.flat();
@@ -100,7 +99,6 @@ Deno.serve(async (req) => {
       const db = new Date(b.pubDate).getTime() || 0;
       return db - da;
     });
-
     return new Response(JSON.stringify({ items: all }), {
       status: 200,
       headers: {
@@ -110,10 +108,9 @@ Deno.serve(async (req) => {
       },
     });
   } catch (error) {
-    console.error("fetch-news error", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Error desconocido" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
