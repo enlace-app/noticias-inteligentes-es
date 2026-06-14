@@ -5,10 +5,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { BottomNav } from "@/components/BottomNav";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Saved from "./pages/Saved";
 import Profile from "./pages/Profile";
+import Sanchometro from "./pages/Sanchometro";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +28,32 @@ const App = () => (
               path="/"
               element={
                 <ProtectedRoute>
-                  <Index />
+                  <>
+                    <Index />
+                    <BottomNav />
+                  </>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/breaking"
+              element={
+                <ProtectedRoute>
+                  <>
+                    <Index filter="breaking" />
+                    <BottomNav />
+                  </>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sanchometro"
+              element={
+                <ProtectedRoute>
+                  <>
+                    <Sanchometro />
+                    <BottomNav />
+                  </>
                 </ProtectedRoute>
               }
             />
@@ -34,7 +61,10 @@ const App = () => (
               path="/saved"
               element={
                 <ProtectedRoute>
-                  <Saved />
+                  <>
+                    <Saved />
+                    <BottomNav />
+                  </>
                 </ProtectedRoute>
               }
             />
@@ -42,7 +72,10 @@ const App = () => (
               path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <>
+                    <Profile />
+                    <BottomNav />
+                  </>
                 </ProtectedRoute>
               }
             />
