@@ -1,4 +1,4 @@
-import { Home, Zap, BarChart2, FileText, Users, TrendingDown } from "lucide-react";
+import { Home, BarChart2, FileText, Users, TrendingDown, XCircle } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ const TABS = [
   { path: "/sanchometro", icon: BarChart2,     label: "Sanchómetro" },
   { path: "/dosier",      icon: FileText,      label: "Dosier" },
   { path: "/troupe",      icon: Users,         label: "Troupe" },
-  { path: "/numeros",     icon: TrendingDown,  label: "Números" },
+  { path: "/mentiras",    icon: XCircle,       label: "Mentiras" },
 ];
 
 export function BottomNav() {
