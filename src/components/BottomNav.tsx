@@ -1,13 +1,13 @@
-import { Home, Zap, BarChart2, Bookmark, User } from "lucide-react";
+import { Home, Zap, BarChart2, FileText, Bookmark, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { path: "/",           icon: Home,     label: "Inicio" },
-  { path: "/breaking",   icon: Zap,      label: "Urgente" },
-  { path: "/sanchometro",icon: BarChart2, label: "Sanchómetro" },
-  { path: "/saved",      icon: Bookmark, label: "Guardadas" },
-  { path: "/profile",    icon: User,     label: "Perfil" },
+  { path: "/",            icon: Home,     label: "Inicio" },
+  { path: "/breaking",    icon: Zap,      label: "Urgente" },
+  { path: "/sanchometro", icon: BarChart2, label: "Sanchómetro" },
+  { path: "/dosier",      icon: FileText,  label: "Dosier" },
+  { path: "/saved",       icon: Bookmark, label: "Guardadas" },
 ];
 
 export function BottomNav() {
@@ -24,15 +24,12 @@ export function BottomNav() {
               key={path}
               onClick={() => navigate(path)}
               className={cn(
-                "flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-0",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
+                "relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors min-w-0",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Icon
-                size={20}
-                className={active ? "fill-primary/20" : ""}
+                size={19}
                 strokeWidth={active ? 2.5 : 1.8}
               />
               <span className={cn(
@@ -42,7 +39,7 @@ export function BottomNav() {
                 {label}
               </span>
               {active && (
-                <span className="absolute bottom-0 w-8 h-0.5 bg-primary rounded-full" />
+                <span className="absolute bottom-0 w-6 h-0.5 bg-primary rounded-full" />
               )}
             </button>
           );
