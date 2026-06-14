@@ -1,13 +1,15 @@
-import { Home, BarChart2, FileText, Users, TrendingDown, XCircle } from "lucide-react";
+import { Home, BarChart2, FileText, Users, TrendingDown, XCircle, Scale } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { path: "/",            icon: Home,         label: "Inicio" },
-  { path: "/sanchometro", icon: BarChart2,     label: "Sanchómetro" },
-  { path: "/dosier",      icon: FileText,      label: "Dosier" },
-  { path: "/troupe",      icon: Users,         label: "Troupe" },
-  { path: "/mentiras",    icon: XCircle,       label: "Mentiras" },
+  { path: "/",            icon: Home,        label: "Inicio" },
+  { path: "/sanchometro", icon: BarChart2,    label: "Sanchómetro" },
+  { path: "/dosier",      icon: FileText,     label: "Dosier" },
+  { path: "/troupe",      icon: Users,        label: "Troupe" },
+  { path: "/mentiras",    icon: XCircle,      label: "Mentiras" },
+  { path: "/numeros",     icon: TrendingDown, label: "Números" },
+  { path: "/casos",       icon: Scale,        label: "Casos" },
 ];
 
 export function BottomNav() {
@@ -16,7 +18,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border safe-bottom">
-      <div className="flex items-center justify-around px-1 py-1">
+      <div className="flex items-center justify-around px-1 py-1 overflow-x-auto no-scrollbar">
         {TABS.map(({ path, icon: Icon, label }) => {
           const active = location.pathname === path;
           return (
@@ -24,13 +26,13 @@ export function BottomNav() {
               key={path}
               onClick={() => navigate(path)}
               className={cn(
-                "relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors min-w-0",
+                "relative flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-lg transition-colors shrink-0",
                 active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon size={19} strokeWidth={active ? 2.5 : 1.8} />
+              <Icon size={18} strokeWidth={active ? 2.5 : 1.8} />
               <span className={cn(
-                "text-[9px] font-semibold truncate",
+                "text-[9px] font-semibold",
                 active ? "text-primary" : "text-muted-foreground"
               )}>
                 {label}
