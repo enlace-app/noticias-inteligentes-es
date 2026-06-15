@@ -75,7 +75,7 @@ async function fetchSource(source: { name: string; url: string; category: string
     return items.slice(0, 10).map((item, i) => {
       const title = extractTag(item, "title");
       const link = extractTag(item, "link");
-      const description = extractTag(item, "description").slice(0, 200);
+      const description = extractTag(item, "description").slice(0, 500);
       const pubDate = extractTag(item, "pubDate");
       return {
         id: `${source.name}-${i}-${pubDate}`,
