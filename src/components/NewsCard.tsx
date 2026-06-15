@@ -16,6 +16,20 @@ const PARTY_STYLES: Record<string, { bg: string; text: string; border: string }>
   SUMAR:{ bg: "bg-purple-950/60", text: "text-purple-400", border: "border-l-purple-500" },
 };
 
+const SOURCE_COLORS: Record<string, string> = {
+  "OKDiario": "text-red-400",
+  "OKDiario Sucesos": "text-red-400",
+  "Libertad Digital": "text-orange-400",
+  "El Debate": "text-orange-400",
+  "Vozpópuli": "text-orange-400",
+  "ABC": "text-blue-400",
+  "ABC España": "text-blue-400",
+  "ABC Sucesos": "text-blue-400",
+  "elDiario.es": "text-purple-400",
+  "Público": "text-purple-400",
+  "El País": "text-purple-400",
+};
+
 export function NewsCard({ item, onSave, saved }: Props) {
   const [voted, setVoted] = useState<"real" | "propaganda" | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -26,6 +40,7 @@ export function NewsCard({ item, onSave, saved }: Props) {
   const bias      = getBiasScore(item.source);
   const biasLabel = getBiasLabel(bias);
   const partyStyle = party ? PARTY_STYLES[party] : null;
+  const sourceColor = SOURCE_COLORS[item.source] ?? "text-muted-foreground";
 
   const timeAgo = () => {
     const diff = Date.now() - new Date(item.pubDate).getTime();
@@ -37,9 +52,15 @@ export function NewsCard({ item, onSave, saved }: Props) {
     return `${Math.floor(h / 24)}d`;
   };
 
+  const openLink = () => {
+    if (item.link && item.link.startsWith("http")) {
+      window.open(item.link, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
     <article className={cn(
-      "rounded-lg border border-border border-l-4 mb-3 animate-slide-in overflow-hidden",
+      "rounded-lg border border-border border-l-4 mb-3 overflow-hidden",
       partyStyle ? `${partyStyle.bg} ${partyStyle.border}` : "bg-card border-l-border"
     )}>
       {/* Cabecera pulsable */}
@@ -64,40 +85,28 @@ export function NewsCard({ item, onSave, saved }: Props) {
           )}
         </div>
 
-        {/* Imagen */}
-        {item.image && (
-          <img
-            src={item.image}
-            alt=""
-            className="w-full h-36 object-cover rounded mb-2 opacity-90"
-            loading="lazy"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
-        )}
-
         {/* Titular */}
         <h2 className="text-sm font-bold text-foreground leading-snug mb-2">
           {item.title}
         </h2>
 
-        {/* Expand indicator */}
+        {/* Meta */}
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-primary font-semibold flex items-center gap-1">
-            {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            {expanded ? "Cerrar" : "Leer más"}
-          </span>
+          <span className={`text-[10px] font-semibold ${sourceColor}`}>{item.source}</span>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">{item.source}</span>
             <span className="text-[10px] text-muted-foreground">{timeAgo()}</span>
+            <span className="text-[10px] text-primary font-semibold flex items-center gap-0.5">
+              {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+            </span>
           </div>
         </div>
       </button>
 
       {/* Contenido expandido */}
       {expanded && (
-        <div className="px-3 pb-3 border-t border-border/50 pt-3 animate-slide-in">
+        <div className="px-3 pb-3 border-t border-border/50 pt-3">
 
-          {/* Descripción completa */}
+          {/* Descripción */}
           {item.description && (
             <p className="text-xs text-foreground leading-relaxed mb-3">
               {item.description}
@@ -106,10 +115,10 @@ export function NewsCard({ item, onSave, saved }: Props) {
 
           {/* Barra de sesgo */}
           <div className="mb-3">
-            <div className="flex justify-between text-[9px] text-muted-foreground mb-0.5">
-              <span>Izquierda</span>
-              <span className="font-semibold">{item.source} · {biasLabel}</span>
-              <span>Derecha</span>
+            <div className="flex justify-between text-[9px] text-muted-foreground mb-1">
+              <span>◀ Izquierda</span>
+              <span className="font-semibold">{biasLabel}</span>
+              <span>Derecha ▶</span>
             </div>
             <div className="relative h-1.5 rounded-full bg-secondary overflow-hidden">
               <div
@@ -148,13 +157,19 @@ export function NewsCard({ item, onSave, saved }: Props) {
             </div>
             <div className="flex items-center gap-2">
               {onSave && (
-                <button onClick={() => onSave(item)} className="text-muted-foreground hover:text-primary transition-colors">
+                <button
+                  onClick={() => onSave(item)}
+                  className="text-muted-foreground hover:text-primary transition-colors"
+                >
                   {saved ? <BookmarkCheck size={14} className="text-primary" /> : <Bookmark size={14} />}
                 </button>
               )}
-              <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+              <button
+                onClick={openLink}
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
                 <ExternalLink size={14} />
-              </a>
+              </button>
             </div>
           </div>
         </div>
