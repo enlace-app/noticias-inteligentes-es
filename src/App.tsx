@@ -16,6 +16,8 @@ import Troupe from "./pages/Troupe";
 import Numeros from "./pages/Numeros";
 import Mentiras from "./pages/Mentiras";
 import Casos from "./pages/Casos";
+import Debate from "./pages/Debate";
+import Opiniones from "./pages/Opiniones";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const App = () => (
             <Route path="/numeros" element={<Layout><Numeros /></Layout>} />
             <Route path="/mentiras" element={<Layout><Mentiras /></Layout>} />
             <Route path="/casos" element={<Layout><Casos /></Layout>} />
+            <Route path="/debate" element={<Layout><Debate /></Layout>} />
+            <Route path="/opiniones" element={<Layout><Opiniones /></Layout>} />
             <Route path="/saved" element={<Layout><Saved /></Layout>} />
             <Route path="/profile" element={<Layout><Profile /></Layout>} />
             <Route path="*" element={<NotFound />} />
