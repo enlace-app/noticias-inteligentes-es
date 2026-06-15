@@ -36,15 +36,10 @@ export type Party = "PP" | "PSOE" | "VOX" | "SUMAR" | null;
 
 export function detectParty(item: { title: string; description: string }): Party {
   const text = `${item.title} ${item.description}`.toLowerCase();
-
   const hasPP = /\bpp\b|partido popular|feij[oó]o|ayuso|n[uú][nñ]ez feij/i.test(text);
-
   const hasPSOE = /\bpsoe\b|pedro s[aá]nchez|moncloa|socialistas?|ferraz|bego[nñ]a g[oó]mez|caso koldo|[aá]balos|amnist[ií]a|lawfare/i.test(text);
-
   const hasVOX = /\bvox\b|abascal|santiago abascal/i.test(text);
-
   const hasSUMAR = /\bsumar\b|yolanda d[ií]az|irene montero|\bpodemos\b/i.test(text);
-
   if (hasPSOE) return "PSOE";
   if (hasPP) return "PP";
   if (hasVOX) return "VOX";
@@ -57,10 +52,14 @@ export function detectScandal(item: { title: string; description: string }): boo
   return /escándalo|escandalo|corrupci[oó]n|deteni|imputad|investigad|juzgad|caso koldo|begoña|tráfico de influencias|trafico de influencias|indulto|malversaci[oó]n|espionaje|fraude|soborno|dimitir|dimisi[oó]n|tribunal|juicio|condena|denuncia|irregular/i.test(text);
 }
 
+export function detectSuceso(item: { title: string; description: string }): boolean {
+  const text = `${item.title} ${item.description}`;
+  return /violaci[oó]n|agresion sexual|agresión sexual|apuñal|degoll|asesin|homicid|atac[oó]|paliz|brutal|mena|inmigrante detenid|extranjero detenid|sin papeles detenid|banda criminal|banda organizada|secuestr|robaron|atraco|navaja|machete|pateras?|cayuco|asalt|violen|delito|preso|condena|agresor|maltrat/i.test(text);
+}
+
 export function getBiasScore(source: string): number {
   const left = ["elDiario.es", "Público", "El País", "El País Política", "RTVE"];
   const right = ["OKDiario", "Libertad Digital", "El Debate", "Vozpópuli", "ABC", "ABC España"];
-
   if (left.includes(source)) return 2;
   if (right.includes(source)) return 8;
   return 5;
