@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ExternalLink, Bookmark, BookmarkCheck, AlertTriangle, Zap, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { ExternalLink, Bookmark, BookmarkCheck, AlertTriangle, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { detectParty, detectScandal, getBiasScore, getBiasLabel, isBreaking, type NewsItem } from "@/lib/news";
 import { cn } from "@/lib/utils";
 
@@ -16,39 +16,14 @@ const PARTY_STYLES: Record<string, { bg: string; text: string; border: string }>
   SUMAR:{ bg: "bg-purple-950/60", text: "text-purple-400", border: "border-l-purple-500" },
 };
 
-async function fetchSummary(item: NewsItem): Promise<string> {
-  const response = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1000,
-      messages: [{
-        role: "user",
-        content: `Eres un periodista de un medio español crítico con el gobierno de Pedro Sánchez. Resume esta noticia en 3-4 frases directas, sin rodeos, destacando lo más relevante e impactante. Si hay implicaciones políticas, señálalas claramente.
-
-Titular: ${item.title}
-Descripción: ${item.description}
-Fuente: ${item.source}
-
-Responde SOLO con el resumen, sin introducción ni conclusión.`
-      }]
-    })
-  });
-  const data = await response.json();
-  return data.content?.[0]?.text ?? "No se pudo generar el resumen.";
-}
-
 export function NewsCard({ item, onSave, saved }: Props) {
   const [voted, setVoted] = useState<"real" | "propaganda" | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const [summary, setSummary] = useState<string | null>(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
 
-  const party    = detectParty(item);
-  const scandal  = detectScandal(item);
-  const breaking = isBreaking(item);
-  const bias     = getBiasScore(item.source);
+  const party     = detectParty(item);
+  const scandal   = detectScandal(item);
+  const breaking  = isBreaking(item);
+  const bias      = getBiasScore(item.source);
   const biasLabel = getBiasLabel(bias);
   const partyStyle = party ? PARTY_STYLES[party] : null;
 
@@ -62,29 +37,14 @@ export function NewsCard({ item, onSave, saved }: Props) {
     return `${Math.floor(h / 24)}d`;
   };
 
-  const handleExpand = async () => {
-    const next = !expanded;
-    setExpanded(next);
-    if (next && !summary) {
-      setLoadingSummary(true);
-      try {
-        const text = await fetchSummary(item);
-        setSummary(text);
-      } catch {
-        setSummary("No se pudo cargar el resumen. Pulsa el enlace para leer la noticia completa.");
-      } finally {
-        setLoadingSummary(false);
-      }
-    }
-  };
-
   return (
     <article className={cn(
-      "rounded-lg border border-border border-l-4 mb-3 animate-slide-in transition-colors overflow-hidden",
+      "rounded-lg border border-border border-l-4 mb-3 animate-slide-in overflow-hidden",
       partyStyle ? `${partyStyle.bg} ${partyStyle.border}` : "bg-card border-l-border"
     )}>
       {/* Cabecera pulsable */}
-      <button className="w-full text-left p-3" onClick={handleExpand}>
+      <button className="w-full text-left p-3" onClick={() => setExpanded(!expanded)}>
+
         {/* Badges */}
         <div className="flex flex-wrap gap-1.5 mb-2">
           {breaking && (
@@ -116,30 +76,32 @@ export function NewsCard({ item, onSave, saved }: Props) {
         )}
 
         {/* Titular */}
-        <h2 className="headline text-sm font-bold text-foreground leading-snug mb-1">
+        <h2 className="text-sm font-bold text-foreground leading-snug mb-2">
           {item.title}
         </h2>
 
         {/* Expand indicator */}
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between">
           <span className="text-[10px] text-primary font-semibold flex items-center gap-1">
             {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            {expanded ? "Cerrar resumen" : "Ver resumen IA"}
+            {expanded ? "Cerrar" : "Leer más"}
           </span>
-          <span className="text-[10px] text-muted-foreground">{timeAgo()}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted-foreground">{item.source}</span>
+            <span className="text-[10px] text-muted-foreground">{timeAgo()}</span>
+          </div>
         </div>
       </button>
 
-      {/* Resumen expandido */}
+      {/* Contenido expandido */}
       {expanded && (
         <div className="px-3 pb-3 border-t border-border/50 pt-3 animate-slide-in">
-          {loadingSummary ? (
-            <div className="flex items-center gap-2 py-2">
-              <Loader2 size={14} className="text-primary animate-spin" />
-              <span className="text-xs text-muted-foreground">Generando resumen...</span>
-            </div>
-          ) : (
-            <p className="text-xs text-foreground leading-relaxed mb-3">{summary}</p>
+
+          {/* Descripción completa */}
+          {item.description && (
+            <p className="text-xs text-foreground leading-relaxed mb-3">
+              {item.description}
+            </p>
           )}
 
           {/* Barra de sesgo */}
