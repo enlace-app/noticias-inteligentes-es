@@ -28,7 +28,7 @@ const SOURCES = [
 function stripHtml(html: string): string {
   return html
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
-    .replace(/<[^>]*>/g, "")
+    .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
@@ -36,6 +36,7 @@ function stripHtml(html: string): string {
     .replace(/&apos;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -66,13 +67,13 @@ async function fetchSource(source: { name: string; url: string; category: string
     if (!res.ok) return [];
     const xml = await res.text();
     const items = xml.match(/<item[\s\S]*?<\/item>/g) || [];
-    return items.slice(0, 15).map((item, i) => {
+    return items.slice(0, 10).map((item, i) => {
       const title = extractTag(item, "title");
       const link = extractTag(item, "link");
-      const description = extractTag(item, "description").slice(0, 240);
+      const description = extractTag(item, "description").slice(0, 200);
       const pubDate = extractTag(item, "pubDate");
       return {
-        id: `${source.name}-${i}-${link}`,
+        id: `${source.name}-${i}-${pubDate}`,
         title,
         link,
         description,
@@ -94,12 +95,23 @@ Deno.serve(async (req) => {
   try {
     const results = await Promise.all(SOURCES.map(fetchSource));
     const all = results.flat();
-    all.sort((a, b) => {
+
+    // Eliminar duplicados por título normalizado
+    const seen = new Set<string>();
+    const deduped = all.filter((item) => {
+      const key = item.title.toLowerCase().replace(/\s+/g, " ").trim().slice(0, 80);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    deduped.sort((a, b) => {
       const da = new Date(a.pubDate).getTime() || 0;
       const db = new Date(b.pubDate).getTime() || 0;
       return db - da;
     });
-    return new Response(JSON.stringify({ items: all }), {
+
+    return new Response(JSON.stringify({ items: deduped }), {
       status: 200,
       headers: {
         ...corsHeaders,
