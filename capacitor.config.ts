@@ -1,12 +1,16 @@
-import type { CapacitorConfig } from "@capacitor/cli";
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.5ecce8e3d5fa44649a556544d2cbb387",
-  appName: "noticias-inteligentes-es",
-  webDir: "dist",
+  appId: 'com.espanalibre.app',
+  appName: 'España Libre',
+  webDir: 'dist',
   server: {
-    url: "https://5ecce8e3-d5fa-4464-9a55-6544d2cbb387.lovableproject.com?forceHideBadge=true",
+    androidScheme: 'https',
     cleartext: true,
+  },
+  android: {
+    allowMixedContent: true,
+    backgroundColor: '#0A0A0F',
   },
 };
 
